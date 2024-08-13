@@ -4,9 +4,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class BaseDeDatos {
+import com.jdbc_ex.Dao.Imp.PersonaDaoImp;
+import com.jdbc_ex.Entities.Persona;
+
+public class Main {
 
     public static void main(String[] args) {
         // el valor del string deberia venir de algun lado, aca se esta hardcodeando
@@ -26,10 +30,20 @@ public class BaseDeDatos {
 
         try {
             Connection conn = DriverManager.getConnection(uri);
+            PersonaDaoImp personaDaoImp = new PersonaDaoImp();
 
-            createTables(conn);
-            agregarPersona(conn, 1, "Juan", 21);
-            agregarPersona(conn, 2, "Paula", 32);
+            // personaDaoImp.createTables(conn);
+            // personaDaoImp.agregarPersona(conn, new Persona("Juan", 27));
+            // personaDaoImp.agregarPersona(conn, new Persona("Carla", 32));
+
+            ResultSet rs = personaDaoImp.getPersonas(conn);
+
+            while (rs.next()) {
+                System.out.println();
+                System.out.println("id: " + rs.getLong(1)
+                        + "\nnombre: " + rs.getString(2)
+                        + "\nedad: " + rs.getInt(3) + "\n");
+            }
 
             conn.close();
         } catch (SQLException e) {
@@ -37,24 +51,4 @@ public class BaseDeDatos {
         }
     }
 
-    private static void createTables(Connection conn) throws SQLException {
-        String table = "CREATE TABLE persona(id INT, nombre VARCHAR(18), edad INT, PRIMARY KEY(id))";
-        conn.prepareStatement(table).execute();
-
-        conn.commit();
-    }
-
-    private static void agregarPersona(Connection conn, int id, String nombre, int edad) throws SQLException {
-        String insert = "INSERT INTO persona (id, nombre, edad) VALUES (?, ?, ?)";
-        PreparedStatement ps = conn.prepareStatement(insert);
-
-        ps.setInt(1, id);
-        ps.setString(2, nombre);
-        ps.setInt(3, edad);
-        ps.executeUpdate();
-
-        ps.close();
-
-        conn.commit();
-    }
 }
